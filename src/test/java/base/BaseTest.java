@@ -14,10 +14,12 @@ public class BaseTest {
         Configuration.timeout = ConfigProvider.config.timeoutMs();
 
         Configuration.headless =
-                Boolean.parseBoolean(System.getProperty(
-                        "headless",
-                        String.valueOf(ConfigProvider.config.headless())
-                ));
+                Boolean.parseBoolean(
+                        System.getProperty(
+                                "headless",
+                                String.valueOf(ConfigProvider.config.headless())
+                        )
+                );
 
         Configuration.screenshots = true;
         Configuration.savePageSource = true;
