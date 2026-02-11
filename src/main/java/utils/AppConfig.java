@@ -8,8 +8,8 @@ public interface AppConfig extends Config {
     @Key("ui.baseUrl")
     String uiBaseUrl();
 
-    @Key("api.baseUrl")
-    String apiBaseUrl();
+    @Key("api.jsonPlaceholderBaseUrl")
+    String jsonPlaceholderBaseUrl();
 
     @Key("browser")
     String browser();
@@ -19,5 +19,8 @@ public interface AppConfig extends Config {
 
     @Key("timeoutMs")
     Long timeoutMs();
+
+    @Key("api.reqresBaseUrl")
+    String reqresBaseUrl();
 }
 

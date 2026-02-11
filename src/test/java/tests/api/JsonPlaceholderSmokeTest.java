@@ -13,7 +13,7 @@ public class JsonPlaceholderSmokeTest {
 
     @Test
     void shouldGetPostsList() {
-        RestAssured.baseURI = ConfigProvider.config.apiBaseUrl();
+        RestAssured.baseURI = ConfigProvider.config.jsonPlaceholderBaseUrl();
 
         given()
                 .when()

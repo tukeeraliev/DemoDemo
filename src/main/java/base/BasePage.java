@@ -1,13 +1,25 @@
 package base;
 
-import static com.codeborne.selenide.WebDriverRunner.url;
+import com.codeborne.selenide.Selenide;
+
+import static com.codeborne.selenide.Selenide.open;
 
 public abstract class BasePage<T extends BasePage<T>> {
 
-    public abstract T waitForPageLoaded();
+    protected abstract String endpoint();
 
-    public boolean isPageLoaded(String endpoint) {
-        return url().contains(endpoint);
+    @SuppressWarnings("unchecked")
+    public T openPage() {
+        open(endpoint());
+        return (T) this;
+    }
+
+
+    public boolean isOpened() {
+        return Selenide.webdriver().driver()
+                .url()
+                .contains(endpoint());
     }
 }
+
 

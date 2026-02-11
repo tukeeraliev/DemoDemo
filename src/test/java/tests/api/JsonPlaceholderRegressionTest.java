@@ -13,7 +13,7 @@ public class JsonPlaceholderRegressionTest {
 
     @Test
     void shouldCreatePost() {
-        RestAssured.baseURI = ConfigProvider.config.apiBaseUrl();
+        RestAssured.baseURI = ConfigProvider.config.jsonPlaceholderBaseUrl();
 
         String body = """
             {
@@ -36,7 +36,7 @@ public class JsonPlaceholderRegressionTest {
 
     @Test
     void shouldUpdatePost() {
-        RestAssured.baseURI = ConfigProvider.config.apiBaseUrl();
+        RestAssured.baseURI = ConfigProvider.config.jsonPlaceholderBaseUrl();
 
         String body = """
             {
@@ -60,7 +60,7 @@ public class JsonPlaceholderRegressionTest {
 
     @Test
     void shouldDeletePost() {
-        RestAssured.baseURI = ConfigProvider.config.apiBaseUrl();
+        RestAssured.baseURI = ConfigProvider.config.jsonPlaceholderBaseUrl();
 
         given()
                 .when()
