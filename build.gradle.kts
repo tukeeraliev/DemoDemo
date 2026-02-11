@@ -112,10 +112,10 @@ tasks.test {
 }
 
 // Отдельная задача для запуска только тестов с @Tag("Smoke")
-tasks.register<Test>("regressionTest") {
+tasks.register<Test>("smokeTest") {
     group = "verification"
-    description = "Runs tests tagged with @Tag(\"Regression\")"
+    description = "Runs tests tagged with @Tag(\"Smoke\")"
     useJUnitPlatform {
-        includeTags("Regression")
+        includeTags("Smoke")
     }
 }
