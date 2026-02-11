@@ -2,6 +2,7 @@ package base;
 
 import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeAll;
+import org.openqa.selenium.chrome.ChromeOptions;
 import utils.ConfigProvider;
 
 public class BaseTest {
@@ -20,6 +21,13 @@ public class BaseTest {
                                 String.valueOf(ConfigProvider.config.headless())
                         )
                 );
+
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--remote-allow-origins=*");
+
+        Configuration.browserCapabilities = options;
 
         Configuration.screenshots = true;
         Configuration.savePageSource = true;
