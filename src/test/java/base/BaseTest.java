@@ -11,7 +11,6 @@ public class BaseTest {
 
         Configuration.baseUrl = ConfigProvider.config.uiBaseUrl();
         Configuration.browser = ConfigProvider.config.browser();
-        Configuration.headless = ConfigProvider.config.headless();
         Configuration.timeout = ConfigProvider.config.timeoutMs();
 
         Configuration.headless =
