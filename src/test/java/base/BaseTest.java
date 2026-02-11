@@ -23,11 +23,15 @@ public class BaseTest {
                 );
 
         ChromeOptions options = new ChromeOptions();
+
+        options.addArguments("--headless=new");   // важно для новых версий Chrome
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--window-size=1920,1080");
 
         Configuration.browserCapabilities = options;
+
 
         Configuration.screenshots = true;
         Configuration.savePageSource = true;
