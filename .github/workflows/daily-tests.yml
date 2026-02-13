@@ -2,54 +2,108 @@ name: Daily UI tests + Allure + Telegram
 
 on:
   schedule:
-    - cron: "1 2 * * *"   # каждый день 07:00 UTC (поменяй как надо)
+    - cron: "0 12 * * *"   # каждый день в 12:00 UTC
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      selenoid:
-        image: aerokube/selenoid:latest-release
-        ports:
-          - 4444:4444
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
-
-      selenoid-ui:
-        image: aerokube/selenoid-ui:latest-release
-        ports:
-          - 8081:8080
-        options: >-
-          --add-host=selenoid:127.0.0.1
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout project
+        uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
 
-      - name: Run UI tests (headless)
-        run: ./gradlew clean smokeTest -Dheadless=true
+      # ==========================================
+      # Создаём конфиг для Selenoid
+      # ==========================================
+      - name: Create browsers.json
+        run: |
+          mkdir -p selenoid
+          echo '{
+            "chrome": {
+              "default": "latest",
+              "versions": {
+                "latest": {
+                  "image": "selenoid/chrome:latest",
+                  "port": "4444",
+                  "path": "/wd/hub"
+                }
+              }
+            }
+          }' > selenoid/browsers.json
 
+      # ==========================================
+      # Создаём папку для видео
+      # ==========================================
+      - name: Create video directory
+        run: mkdir -p video
+
+      # ==========================================
+      # Запуск Selenoid
+      # ==========================================
+      - name: Start Selenoid
+        run: |
+          docker run -d \
+            --name selenoid \
+            -p 4444:4444 \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v ${{ github.workspace }}/selenoid:/etc/selenoid \
+            -v ${{ github.workspace }}/video:/opt/selenoid/video \
+            aerokube/selenoid:latest-release \
+            -conf /etc/selenoid/browsers.json \
+            -limit 5 \
+            -video-output-dir /opt/selenoid/video
+
+      # ==========================================
+      # Ждём готовности Selenoid
+      # ==========================================
+      - name: Wait for Selenoid
+        run: |
+          for i in {1..15}; do
+            curl -s http://localhost:4444/status && break
+            sleep 2
+          done
+
+      # ==========================================
+      # Запуск тестов
+      # ==========================================
+      - name: Run UI tests
+        run: ./gradlew clean smokeTest \
+          -DremoteUrl=http://localhost:4444/wd/hub \
+          -Dbrowser=chrome \
+          -Dheadless=true
+
+      # ==========================================
+      # Генерация Allure
+      # ==========================================
       - name: Generate Allure report
         if: always()
         run: ./gradlew allureReport
 
+      # ==========================================
+      # Архивация отчёта
+      # ==========================================
       - name: Zip Allure report
         if: always()
         run: |
-          cd build/reports/allure-report || cd build/allure-report || true
-          cd -
-          zip -r allure-report.zip build
+          cd build/reports
+          zip -r allure-report.zip allure-report
 
+      # ==========================================
+      # Отправка отчёта в Telegram
+      # ==========================================
       - name: Send report to Telegram
         if: always()
         run: |
           curl -F chat_id="${{ secrets.TG_CHAT_ID }}" \
-               -F document=@allure-report.zip \
+               -F document=@build/reports/allure-report.zip \
                https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument
