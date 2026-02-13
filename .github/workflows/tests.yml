@@ -17,26 +17,18 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-          cache: gradle   # ✅ ускорит сборку (кэш Gradle)
+          cache: gradle
 
-      # ✅ ставим Chrome и получаем его версию в output
-      - name: Set up Chrome
-        id: chrome
+      - name: Install Chrome
         uses: browser-actions/setup-chrome@v1
 
-      # ✅ ставим Chromedriver (совпадающий с Chrome)
-      - name: Set up ChromeDriver (match Chrome)
-        uses: nanasess/setup-chromedriver@v2
-        with:
-          chromedriver-version: ${{ steps.chrome.outputs.chrome-version }}
-
-      - name: Print browser versions (for debug)
+      - name: Print browser versions
         run: |
           google-chrome --version
-          chromedriver --version
+          chromedriver --version || echo "chromedriver not found"
 
-      - name: Grant execute permission for gradlew
+      - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Run smoke tests (headless)
+      - name: Run smoke tests
         run: ./gradlew clean smokeTest -Dheadless=true -Dbrowser=chrome --stacktrace
