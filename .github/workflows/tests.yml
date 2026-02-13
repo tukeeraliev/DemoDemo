@@ -23,17 +23,17 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Install Chrome
-        uses: browser-actions/setup-chrome@v1
-
-      - name: Show Chrome version
-        run: google-chrome --version
-
       - name: Grant execute permission
         run: chmod +x gradlew
 
+      - name: Show Chrome version (debug)
+        run: |
+          google-chrome --version || true
+          chromium-browser --version || true
+          which google-chrome || true
+
       - name: Run smoke tests (headless)
-        run: ./gradlew clean smokeTest -Dheadless=true -Dbrowser=chrome --stacktrace
+        run: ./gradlew clean smokeTest -Dheadless=true -Dbrowser=chrome --stacktrace --info
 
       - name: Generate Allure report
         if: always()
