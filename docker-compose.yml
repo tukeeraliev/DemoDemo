@@ -1,0 +1,25 @@
+services:
+  selenoid:
+    image: aerokube/selenoid:latest-release
+    container_name: selenoid
+    ports:
+      - "4444:4444"
+    volumes:
+      - ./selenoid:/etc/selenoid
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: [
+      "-conf", "/etc/selenoid/browsers.json",
+      "-limit", "5",
+      "-container-network", "demodemo_default",
+      "-service-startup-timeout", "3m",
+      "-session-attempt-timeout", "3m",
+      "-timeout", "10m"
+    ]
+  selenoid-ui:
+    image: aerokube/selenoid-ui:latest-release
+    container_name: selenoid-ui
+    ports:
+      - "8081:8080"
+    command: ["--selenoid-uri", "http://selenoid:4444"]
+    depends_on:
+      - selenoid

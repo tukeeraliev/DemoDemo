@@ -1,13 +1,16 @@
 package tests.ui;
 
 import base.BaseTest;
+import common.listeners.AllureUiListener;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import pages.LoginPage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("Regression")
+@ExtendWith(AllureUiListener.class)
 public class LoginRegressionTest extends BaseTest {
 
     @Test

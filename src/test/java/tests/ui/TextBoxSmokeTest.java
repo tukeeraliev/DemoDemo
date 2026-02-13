@@ -1,10 +1,13 @@
 package tests.ui;
 
 import base.BaseTest;
+import common.listeners.AllureUiListener;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import pages.TextBoxPage;
 
+@ExtendWith(AllureUiListener.class)
 public class TextBoxSmokeTest extends BaseTest {
 
     @Test

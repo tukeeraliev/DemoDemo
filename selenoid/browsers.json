@@ -1,0 +1,17 @@
+{
+  "chrome": {
+    "default": "121.0",
+    "versions": {
+      "121.0": {
+        "image": "selenoid/chrome:121.0",
+        "port": "4444",
+        "path": "/",
+        "shmSize": 268435456,
+        "env": [
+          "SCREEN_WIDTH=1920",
+          "SCREEN_HEIGHT=1080"
+        ]
+      }
+    }
+  }
+}

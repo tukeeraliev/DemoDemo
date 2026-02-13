@@ -128,3 +128,15 @@ tasks.register<Test>("regressionTest") {
         includeTags("Regression")
     }
 }
+
+tasks.register<Test>("smokeDocker") {
+    group = "verification"
+    description = "Runs smoke tests in Selenoid (Docker)"
+    useJUnitPlatform { includeTags("Smoke") }
+    systemProperty("remoteUrl", "http://localhost:4444/wd/hub")
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    systemProperty("allure.results.directory", "$buildDir/allure-results")
+}
