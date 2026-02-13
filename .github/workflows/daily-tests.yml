@@ -52,10 +52,10 @@ jobs:
       - name: Screenshot Allure report
         if: always()
         run: |
-          ls -R build
           npx playwright screenshot \
-            file://$GITHUB_WORKSPACE/build/allure-report/index.html \
-            allure-report.png
+            file://$(pwd)/build/reports/allure-report/allureReport/index.html \
+            allure-report.png \
+            --wait-for-timeout=5000
 
       # =========================
       # Отправка картинки в Telegram
