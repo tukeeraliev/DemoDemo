@@ -2,8 +2,7 @@ name: Smoke Tests
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches: [ main ]
 
 jobs:
   test:
@@ -17,16 +16,27 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: 21
+          cache: gradle   # ✅ ускорит сборку (кэш Gradle)
 
+      # ✅ ставим Chrome и получаем его версию в output
       - name: Set up Chrome
+        id: chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Set up ChromeDriver
+      # ✅ ставим Chromedriver (совпадающий с Chrome)
+      - name: Set up ChromeDriver (match Chrome)
         uses: nanasess/setup-chromedriver@v2
+        with:
+          chromedriver-version: ${{ steps.chrome.outputs.chrome-version }}
 
-      - name: Grant execute permission
+      - name: Print browser versions (for debug)
+        run: |
+          google-chrome --version
+          chromedriver --version
+
+      - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run smoke tests
+      - name: Run smoke tests (headless)
         run: ./gradlew clean smokeTest -Dheadless=true -Dbrowser=chrome --stacktrace
