@@ -9,12 +9,13 @@ public abstract class BasePage<T extends BasePage<T>> {
 
     protected abstract String endpoint();
 
-    @Step("Открыть страницу: {this.endpoint}")
+    @Step("Open page")
     @SuppressWarnings("unchecked")
     public T openPage() {
         open(endpoint());
         return (T) this;
     }
+
 
     @Step("Проверить что страница {this.endpoint} открыта")
     public boolean isOpened() {
