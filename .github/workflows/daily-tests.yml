@@ -2,7 +2,7 @@ name: Daily UI tests + Allure + Telegram
 
 on:
   schedule:
-    - cron: "0 12 * * *"   # каждый день в 12:00 UTC
+    - cron: "0 12 * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,8 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout project
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -22,85 +21,22 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      # ==========================================
-      # Создаём конфиг для Selenoid
-      # ==========================================
-      - name: Create browsers.json
-        run: |
-          mkdir -p selenoid
-          echo '{
-            "chrome": {
-              "default": "latest",
-              "versions": {
-                "latest": {
-                  "image": "selenoid/chrome:latest",
-                  "port": "4444",
-                  "path": "/wd/hub"
-                }
-              }
-            }
-          }' > selenoid/browsers.json
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
 
-      # ==========================================
-      # Создаём папку для видео
-      # ==========================================
-      - name: Create video directory
-        run: mkdir -p video
+      - name: Run tests (headless)
+        run: ./gradlew clean smokeTest -Dheadless=true
 
-      # ==========================================
-      # Запуск Selenoid
-      # ==========================================
-      - name: Start Selenoid
-        run: |
-          docker run -d \
-            --name selenoid \
-            -p 4444:4444 \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v ${{ github.workspace }}/selenoid:/etc/selenoid \
-            -v ${{ github.workspace }}/video:/opt/selenoid/video \
-            aerokube/selenoid:latest-release \
-            -conf /etc/selenoid/browsers.json \
-            -limit 5 \
-            -video-output-dir /opt/selenoid/video
-
-      # ==========================================
-      # Ждём готовности Selenoid
-      # ==========================================
-      - name: Wait for Selenoid
-        run: |
-          for i in {1..15}; do
-            curl -s http://localhost:4444/status && break
-            sleep 2
-          done
-
-      # ==========================================
-      # Запуск тестов
-      # ==========================================
-      - name: Run UI tests
-        run: ./gradlew clean smokeTest \
-          -DremoteUrl=http://localhost:4444/wd/hub \
-          -Dbrowser=chrome \
-          -Dheadless=true
-
-      # ==========================================
-      # Генерация Allure
-      # ==========================================
       - name: Generate Allure report
         if: always()
         run: ./gradlew allureReport
 
-      # ==========================================
-      # Архивация отчёта
-      # ==========================================
       - name: Zip Allure report
         if: always()
         run: |
           cd build/reports
           zip -r allure-report.zip allure-report
 
-      # ==========================================
-      # Отправка отчёта в Telegram
-      # ==========================================
       - name: Send report to Telegram
         if: always()
         run: |
