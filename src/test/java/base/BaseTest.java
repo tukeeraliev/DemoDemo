@@ -18,7 +18,7 @@ public class BaseTest {
         Configuration.timeout = ConfigProvider.config.timeoutMs();
 
         // 1) Если передали remoteUrl -> работаем через Selenoid
-        String remoteUrl = System.getProperty("remoteUrl", ConfigProvider.config.remoteUrl());
+        String remoteUrl = System.getProperty("remoteUrl");
 
         if (remoteUrl != null && !remoteUrl.isBlank()) {
 
