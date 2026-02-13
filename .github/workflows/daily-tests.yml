@@ -49,13 +49,21 @@ jobs:
       # =========================
       # Скриншот Allure index.html
       # =========================
+      - name: Start local server for Allure
+        if: always()
+        run: |
+          npm install -g serve
+          serve build/reports/allure-report/allureReport -l 3000 &
+          sleep 5
+
       - name: Screenshot Allure report
         if: always()
         run: |
           npx playwright screenshot \
-            file://$(pwd)/build/reports/allure-report/allureReport/index.html \
+            http://localhost:3000 \
             allure-report.png \
-            --wait-for-timeout=5000
+            --wait-for-timeout=8000 \
+            --full-page
 
       # =========================
       # Отправка картинки в Telegram
