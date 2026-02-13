@@ -14,8 +14,10 @@ public class BaseTest {
     static void setup() {
 
         Configuration.baseUrl = ConfigProvider.config.uiBaseUrl();
-        Configuration.browser = ConfigProvider.config.browser();
         Configuration.timeout = ConfigProvider.config.timeoutMs();
+
+        // browser: сначала -Dbrowser=..., иначе app.properties
+        Configuration.browser = System.getProperty("browser", ConfigProvider.config.browser());
 
         // 1) Если передали remoteUrl -> работаем через Selenoid
         String remoteUrl = System.getProperty("remoteUrl");
@@ -24,12 +26,11 @@ public class BaseTest {
 
             Configuration.remote = remoteUrl;
 
-            Configuration.remoteConnectionTimeout = 180000; // 3 минуты
-            Configuration.remoteReadTimeout = 180000;       // 3 минуты
+            Configuration.remoteConnectionTimeout = 180_000; // 3 минуты
+            Configuration.remoteReadTimeout = 180_000;       // 3 минуты
 
-
-            // версия браузера под browsers.json (121.0)
-            String browserVersion = System.getProperty("browserVersion", ConfigProvider.config.browserVersion());
+            // browserVersion: ТОЛЬКО из system property (чтобы app.properties не ломал CI)
+            String browserVersion = System.getProperty("browserVersion");
             if (browserVersion != null && !browserVersion.isBlank()) {
                 Configuration.browserVersion = browserVersion;
             }
@@ -37,17 +38,18 @@ public class BaseTest {
             // Selenoid capabilities
             Map<String, Object> selenoidOptions = new HashMap<>();
             selenoidOptions.put("enableVideo", false);
+            // если надо будет VNC:
+            // selenoidOptions.put("enableVNC", true);
 
             ChromeOptions options = new ChromeOptions();
             options.setCapability("selenoid:options", selenoidOptions);
-
             Configuration.browserCapabilities = options;
 
-            // для remote headless НЕ нужен
+            // для remote headless не нужен
             Configuration.headless = false;
 
         } else {
-            // 2) Локальный запуск
+            // 2) Локальный запуск (CI тоже сюда попадает)
             Configuration.headless = Boolean.parseBoolean(
                     System.getProperty("headless", String.valueOf(ConfigProvider.config.headless()))
             );

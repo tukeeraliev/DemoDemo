@@ -23,11 +23,7 @@ public interface AppConfig extends Config {
     @Key("api.reqresBaseUrl")
     String reqresBaseUrl();
 
-    @Key("remoteUrl")
-    String remoteUrl();
 
-    @Key("browserVersion")
-    String browserVersion();
 
 }
 
