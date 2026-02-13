@@ -33,8 +33,8 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Run tests (remote)
-        run: ./gradlew test -DremoteUrl=http://localhost:4444/wd/hub --tests "tests.ui.*"
+      - name: Run UI tests (headless)
+        run: ./gradlew clean smokeTest -Dheadless=true
 
       - name: Generate Allure report
         if: always()
