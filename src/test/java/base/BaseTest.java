@@ -49,9 +49,12 @@ public class BaseTest {
             Configuration.headless = false;
 
         } else {
-            // 2) Локальный запуск (CI тоже сюда попадает)
-            Configuration.headless = Boolean.parseBoolean(
-                    System.getProperty("headless", String.valueOf(ConfigProvider.config.headless()))
+            // CI определяется автоматически
+            boolean isCi = System.getenv("CI") != null;
+
+            Configuration.headless = isCi || Boolean.parseBoolean(
+                    System.getProperty("headless",
+                            String.valueOf(ConfigProvider.config.headless()))
             );
 
             ChromeOptions options = new ChromeOptions();
@@ -62,6 +65,7 @@ public class BaseTest {
 
             options.addArguments("--no-sandbox");
             options.addArguments("--disable-dev-shm-usage");
+            options.addArguments("--disable-gpu");
             options.addArguments("--remote-allow-origins=*");
             options.addArguments("--disable-features=VizDisplayCompositor");
             options.addArguments("--window-size=1920,1080");
