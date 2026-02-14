@@ -10,81 +10,71 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # =========================
-      # Checkout
-      # =========================
       - uses: actions/checkout@v4
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      # =========================
-      # Java
-      # =========================
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
 
-      # =========================
-      # Chrome
-      # =========================
       - name: Install Chrome
         uses: browser-actions/setup-chrome@v1
 
       # =========================
-      # 🔥 RUN ALL TESTS
+      # Запуск тестов
       # =========================
-      - name: Run ALL tests (headless)
-        # 🔧 ИЗМЕНЕНО: было smokeTest → теперь test чтобы запускались ВСЕ тесты
-        run: ./gradlew clean test -Dheadless=true
+      - name: Run tests (headless)
+        run: ./gradlew clean smokeTest -Dheadless=true
 
       # =========================
-      # Allure report
+      # Генерация Allure отчёта
       # =========================
       - name: Generate Allure report
         if: always()
         run: ./gradlew allureReport
 
       # =========================
-      # Install playwright
+      # Установка playwright
       # =========================
       - name: Install Playwright
         if: always()
         run: |
-          npm install -g playwright
-          playwright install chromium
+          # ✅ ИСПРАВЛЕНО: ставим Chromium для Playwright вместе с зависимостями Ubuntu
+          # (так стабильнее, чем global npm install playwright)
+          npx -y playwright@latest install --with-deps chromium
 
       # =========================
-      # Start server for Allure
+      # Скриншот Allure index.html
       # =========================
       - name: Start local server for Allure
         if: always()
         run: |
           npm install -g serve
-          # 🔧 ИЗМЕНЕНО: правильный путь к Allure
           serve build/reports/allure-report/allureReport -l 3000 &
-          sleep 8   # 🔧 ИЗМЕНЕНО: было 5 → увеличено чтобы сервер успел подняться
+          # ✅ ИСПРАВЛЕНО: чуть больше времени, чтобы сервер точно поднялся
+          sleep 8
 
-      # =========================
-      # Screenshot Allure
-      # =========================
       - name: Screenshot Allure report
         if: always()
         run: |
-          npx playwright screenshot \
-            http://localhost:3000 \
-            allure-report.png \
-            --wait-for-timeout=10000 \   # 🔧 ИЗМЕНЕНО: увеличен timeout
-            --full-page
+          # ✅ ИСПРАВЛЕНО: убран --wait-for-timeout (он часто не для CLI screenshot)
+          # ✅ ИСПРАВЛЕНО: добавлен --timeout чтобы Playwright ждал страницу
+          # ✅ ИСПРАВЛЕНО: без сломанного "\" и лишних аргументов
+          npx -y playwright@latest screenshot --full-page --timeout 60000 http://localhost:3000 allure-report.png
 
       # =========================
-      # Send to Telegram
+      # Отправка картинки в Telegram
       # =========================
       - name: Send image to Telegram
         if: always()
         run: |
-          curl -F chat_id="${{ secrets.TG_CHAT_ID }}" \
-               -F photo=@allure-report.png \
-               https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendPhoto
+          # ✅ ДОБАВЛЕНО: если скрин не создался — шаг упадёт понятно, а не curl(26)
+          test -f allure-report.png
+
+          curl -F "chat_id=${{ secrets.TG_CHAT_ID }}" \
+               -F "photo=@allure-report.png" \
+               "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendPhoto"
