@@ -17,7 +17,7 @@ public abstract class BasePage<T extends BasePage<T>> {
     }
 
 
-    @Step("Проверить что страница {this.endpoint} открыта")
+    @Step("Проверить что страница открыта")
     public boolean isOpened() {
         return Selenide.webdriver().driver()
                 .url()
