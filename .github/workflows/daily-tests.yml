@@ -38,13 +38,45 @@ jobs:
         run: ./gradlew allureReport
 
       # =========================
-      # Установка playwright
+      # ✅ ДОБАВИЛ: Debug папок (чтобы в логах видеть что есть)
+      # =========================
+      - name: Debug Allure folders
+        if: always()
+        run: |
+          ls -la build || true
+          ls -la build/allure-results || true
+          ls -la build/reports/allure-report/allureReport || true
+
+      # =========================
+      # ✅ ДОБАВИЛ: Upload Allure results (сырьё)
+      # =========================
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: build/allure-results
+          if-no-files-found: warn
+          retention-days: 7
+
+      # =========================
+      # ✅ ДОБАВИЛ: Upload Allure report (готовый html)
+      # =========================
+      - name: Upload Allure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: build/reports/allure-report/allureReport
+          if-no-files-found: warn
+          retention-days: 7
+
+      # =========================
+      # Установка Playwright
       # =========================
       - name: Install Playwright
         if: always()
         run: |
-          # ✅ ИСПРАВЛЕНО: ставим Chromium для Playwright вместе с зависимостями Ubuntu
-          # (так стабильнее, чем global npm install playwright)
           npx -y playwright@latest install --with-deps chromium
 
       # =========================
@@ -55,15 +87,11 @@ jobs:
         run: |
           npm install -g serve
           serve build/reports/allure-report/allureReport -l 3000 &
-          # ✅ ИСПРАВЛЕНО: чуть больше времени, чтобы сервер точно поднялся
           sleep 8
 
       - name: Screenshot Allure report
         if: always()
         run: |
-          # ✅ ИСПРАВЛЕНО: убран --wait-for-timeout (он часто не для CLI screenshot)
-          # ✅ ИСПРАВЛЕНО: добавлен --timeout чтобы Playwright ждал страницу
-          # ✅ ИСПРАВЛЕНО: без сломанного "\" и лишних аргументов
           npx -y playwright@latest screenshot --full-page --timeout 60000 http://localhost:3000 allure-report.png
 
       # =========================
@@ -72,7 +100,6 @@ jobs:
       - name: Send image to Telegram
         if: always()
         run: |
-          # ✅ ДОБАВЛЕНО: если скрин не создался — шаг упадёт понятно, а не curl(26)
           test -f allure-report.png
 
           curl -F "chat_id=${{ secrets.TG_CHAT_ID }}" \
