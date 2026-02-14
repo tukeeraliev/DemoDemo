@@ -32,41 +32,7 @@ jobs:
           chromium-browser --version || true
           which google-chrome || true
 
-      - name: Run smoke tests (headless)
-        run: ./gradlew clean smokeTest -Dheadless=true -Dbrowser=chrome --stacktrace --info
-
-      - name: Generate Allure report
-        if: always()
-        run: ./gradlew allureReport
-
-      # ✅ ДОБАВИЛ (debug): покажет в логах, что реально создалось
-      # Если папок нет — сразу видно почему artifacts не появились
-      - name: Debug Allure folders
-        if: always()
-        run: |
-          ls -la build || true
-          ls -la build/allure-results || true
-          ls -la build/allure-report || true
-
-      # ✅ ДОБАВИЛ if-no-files-found: warn
-      # Чтобы workflow не падал, но писал предупреждение если папка пустая/не найдена
-      - name: Upload Allure results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results
-          path: build/reports/allure-report/allureReport
-          if-no-files-found: warn
-          retention-days: 7
-
-      # ✅ ИСПРАВИЛ PATH:
-      # БЫЛО: build/reports/allure-report  (неправильно для твоего плагина)
-      # СТАЛО: build/allure-report         (правильная папка)
-      - name: Upload Allure report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: build/allure-report
-          if-no-files-found: warn
-          retention-days: 7
+      # =========================
+      # RUN TESTS
+      # =========================
+      - name: Run smoke tests (headle
