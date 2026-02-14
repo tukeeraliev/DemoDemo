@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("io.qameta.allure") version "2.12.0" // <-- ИЗМЕНЕНО (было 2.9.4)
+    id("io.qameta.allure") version "2.12.0"
     id("io.freefair.lombok") version "8.4"
 }
 
@@ -55,56 +55,56 @@ val slf4jVersion = "2.0.17"
 val webDriverManagerVersion = "6.1.0"
 
 dependencies {
-    // ===== CORE DEPENDENCIES =====
+
     implementation(platform("org.junit:junit-bom:$junitVersion"))
 
-    // ===== TESTING FRAMEWORKS =====
-    implementation("org.junit.jupiter:junit-jupiter") // <-- ВЕРНУЛ КАК БЫЛО (implementation)
-    implementation("org.assertj:assertj-core:$assertjVersion") // <-- ВЕРНУЛ КАК БЫЛО (implementation)
+    // TEST
+    implementation("org.junit.jupiter:junit-jupiter")
+    implementation("org.assertj:assertj-core:$assertjVersion")
 
-    // ===== API TESTING =====
-    implementation("io.rest-assured:rest-assured:$restAssuredVersion") // <-- ВЕРНУЛ КАК БЫЛО (implementation)
-    implementation("io.qameta.allure:allure-rest-assured:$allureVersion") // <-- ИЗМЕНЕНО (было 2.30.0), но оставил implementation как было
+    // API
+    implementation("io.rest-assured:rest-assured:$restAssuredVersion")
+    implementation("io.qameta.allure:allure-rest-assured:$allureVersion")
 
-    // ===== WEB TESTING =====
-    implementation("com.codeborne:selenide:$selenideVersion") // <-- ВЕРНУЛ КАК БЫЛО (implementation)
-    implementation("com.codeborne:selenide-selenoid:$selenideVersion") // <-- ВЕРНУЛ КАК БЫЛО (implementation)
-    implementation("io.github.bonigarcia:webdrivermanager:$webDriverManagerVersion") // <-- ВЕРНУЛ КАК БЫЛО (implementation)
+    // UI
+    implementation("com.codeborne:selenide:$selenideVersion")
+    implementation("com.codeborne:selenide-selenoid:$selenideVersion")
+    implementation("io.github.bonigarcia:webdrivermanager:$webDriverManagerVersion")
 
-    // ===== DATABASE =====
+    // DB
     implementation("org.hibernate:hibernate-core:$hibernateVersion")
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
 
-    // ===== JSON PROCESSING =====
+    // JSON
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
 
-    // ===== LOGGING =====
-    implementation("org.slf4j:slf4j-api:$slf4jVersion") // <-- ВЕРНУЛ КАК БЫЛО (implementation)
-    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion") // <-- ВЕРНУЛ
-    implementation("org.apache.logging.log4j:log4j-core:$log4jVersion") // <-- ВЕРНУЛ
-    implementation("org.apache.logging.log4j:log4j-api:$log4jVersion") // <-- ВЕРНУЛ
+    // LOGGING
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion")
+    implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")
+    implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
 
-    // ===== CONFIGURATION MANAGEMENT =====
+    // CONFIG
     implementation("org.aeonbits.owner:owner:$ownerVersion")
 
-    // ===== CODE GENERATION =====
-    implementation("org.projectlombok:lombok:$lombokVersion") // <-- КАК БЫЛО
-    compileOnly("org.projectlombok:lombok:$lombokOldVersion") // <-- КАК БЫЛО
-    annotationProcessor("org.projectlombok:lombok:$lombokOldVersion") // <-- КАК БЫЛО
-    testCompileOnly("org.projectlombok:lombok:$lombokOldVersion") // <-- КАК БЫЛО
-    testAnnotationProcessor("org.projectlombok:lombok:$lombokOldVersion") // <-- КАК БЫЛО
+    // LOMBOK
+    implementation("org.projectlombok:lombok:$lombokVersion")
+    compileOnly("org.projectlombok:lombok:$lombokOldVersion")
+    annotationProcessor("org.projectlombok:lombok:$lombokOldVersion")
+    testCompileOnly("org.projectlombok:lombok:$lombokOldVersion")
+    testAnnotationProcessor("org.projectlombok:lombok:$lombokOldVersion")
 
-    // ===== ASPECT ORIENTED PROGRAMMING =====
-    implementation("org.aspectj:aspectjtools:$aspectjVersion") // <-- ВЕРНУЛ КАК БЫЛО (implementation)
-    implementation("org.aspectj:aspectjweaver:$aspectjVersion") // <-- ВЕРНУЛ
+    // AOP
+    implementation("org.aspectj:aspectjtools:$aspectjVersion")
+    implementation("org.aspectj:aspectjweaver:$aspectjVersion")
 
-    // ===== TEST DATA GENERATION =====
-    implementation("com.github.javafaker:javafaker:1.0.2") // <-- ВЕРНУЛ
+    // DATA
+    implementation("com.github.javafaker:javafaker:1.0.2")
 
-    // ===== REPORTING =====
-    implementation("io.qameta.allure:allure-junit5:$allureVersion") // <-- ВЕРНУЛ КАК БЫЛО (implementation)
-    testImplementation("io.qameta.allure:allure-selenide:$allureVersion") // <-- оставить testImplementation ок
+    // ALLURE
+    implementation("io.qameta.allure:allure-junit5:$allureVersion")
+    testImplementation("io.qameta.allure:allure-selenide:$allureVersion")
 }
 
 tasks.test {
@@ -125,7 +125,7 @@ tasks.register<Test>("regressionTest") {
     useJUnitPlatform { includeTags("Regression") }
 }
 
-// Smoke в Docker
+// Smoke Docker
 tasks.register<Test>("smokeDocker") {
     group = "verification"
     description = "Runs smoke tests in Selenoid (Docker)"
@@ -133,11 +133,20 @@ tasks.register<Test>("smokeDocker") {
     systemProperty("remoteUrl", "http://localhost:4444/wd/hub")
 }
 
+// Общие настройки для всех тестов
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
-    // ВАЖНО: проброс всех -D из JVM Gradle в JVM тестов
     systemProperties(System.getProperties().mapKeys { it.key.toString() })
 
     systemProperty("allure.results.directory", "$buildDir/allure-results")
+}
+
+// ======================================================
+// ✅ ВАЖНО ДЛЯ CI
+// Когда запускается smokeTest → allureReport построится
+// И artifacts появятся в GitHub Actions
+// ======================================================
+tasks.named("allureReport") {
+    dependsOn("smokeTest")
 }
