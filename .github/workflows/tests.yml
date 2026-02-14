@@ -35,4 +35,54 @@ jobs:
       # =========================
       # RUN TESTS
       # =========================
-      - name: Run smoke tests (headle
+      - name: Run smoke tests (headless)
+        run: ./gradlew clean smokeTest -Dheadless=true -Dbrowser=chrome --stacktrace --info
+
+      # =========================
+      # GENERATE ALLURE REPORT
+      # =========================
+      - name: Generate Allure report
+        if: always()
+        run: ./gradlew allureReport
+
+      # =========================
+      # DEBUG PATHS (чтобы видеть где реально отчёт)
+      # =========================
+      - name: Debug Allure folders
+        if: always()
+        run: |
+          echo "=== build ==="
+          ls -la build || true
+
+          echo "=== allure-results ==="
+          ls -la build/allure-results || true
+
+          echo "=== allure-report ==="
+          ls -la build/reports/allure-report || true
+
+          echo "=== final html ==="
+          ls -la build/reports/allure-report/allureReport || true
+
+      # =========================
+      # UPLOAD RAW RESULTS
+      # =========================
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: build/allure-results
+          if-no-files-found: warn
+          retention-days: 7
+
+      # =========================
+      # UPLOAD FINAL HTML REPORT
+      # =========================
+      - name: Upload Allure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: build/reports/allure-report/allureReport
+          if-no-files-found: warn
+          retention-days: 7
