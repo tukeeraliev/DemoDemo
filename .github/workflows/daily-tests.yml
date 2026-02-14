@@ -10,35 +10,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # =========================
+      # Checkout
+      # =========================
       - uses: actions/checkout@v4
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      # =========================
+      # Java
+      # =========================
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
 
+      # =========================
+      # Chrome
+      # =========================
       - name: Install Chrome
         uses: browser-actions/setup-chrome@v1
 
       # =========================
-      # Запуск тестов
+      # 🔥 RUN ALL TESTS
       # =========================
-      - name: Run tests (headless)
-        run: ./gradlew clean smokeTest -Dheadless=true
+      - name: Run ALL tests (headless)
+        # 🔧 ИЗМЕНЕНО: было smokeTest → теперь test чтобы запускались ВСЕ тесты
+        run: ./gradlew clean test -Dheadless=true
 
       # =========================
-      # Генерация Allure отчёта
+      # Allure report
       # =========================
       - name: Generate Allure report
         if: always()
         run: ./gradlew allureReport
 
       # =========================
-      # Установка playwright
+      # Install playwright
       # =========================
       - name: Install Playwright
         if: always()
@@ -47,26 +57,30 @@ jobs:
           playwright install chromium
 
       # =========================
-      # Скриншот Allure index.html
+      # Start server for Allure
       # =========================
       - name: Start local server for Allure
         if: always()
         run: |
           npm install -g serve
+          # 🔧 ИЗМЕНЕНО: правильный путь к Allure
           serve build/reports/allure-report/allureReport -l 3000 &
-          sleep 5
+          sleep 8   # 🔧 ИЗМЕНЕНО: было 5 → увеличено чтобы сервер успел подняться
 
+      # =========================
+      # Screenshot Allure
+      # =========================
       - name: Screenshot Allure report
         if: always()
         run: |
           npx playwright screenshot \
             http://localhost:3000 \
             allure-report.png \
-            --wait-for-timeout=8000 \
+            --wait-for-timeout=10000 \   # 🔧 ИЗМЕНЕНО: увеличен timeout
             --full-page
 
       # =========================
-      # Отправка картинки в Telegram
+      # Send to Telegram
       # =========================
       - name: Send image to Telegram
         if: always()
