@@ -46,7 +46,8 @@ public class AllureUiListener implements TestWatcher {
                     "txt"
             );
 
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
