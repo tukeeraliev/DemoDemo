@@ -23,6 +23,8 @@ public interface AppConfig extends Config {
     @Key("api.reqresBaseUrl")
     String reqresBaseUrl();
 
+    @Key("apiBaseUrl")
+    String apiBaseUrl();
 
 
 }

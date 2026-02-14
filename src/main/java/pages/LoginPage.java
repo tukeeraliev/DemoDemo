@@ -5,13 +5,26 @@ import io.qameta.allure.Step;
 
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.open;
 
 public class LoginPage extends BasePage<LoginPage> {
 
     @Override
     protected String endpoint() {
-        return "/login";
+        return "/profile";
+    }
+
+    @Step("Перейти на Login со страницы Book Store")
+    public LoginPage goToLoginFromBooks() {
+        // На /books есть кнопка Login с id=login
+        $("#login").shouldBe(visible).click();
+        return this;
+    }
+
+    @Step("Дождаться, что страница логина открыта")
+    public LoginPage shouldBeOpened() {
+        $("#userName").shouldBe(visible);
+        $("#password").shouldBe(visible);
+        return this;
     }
 
     @Step("Ввести username: {username}")
@@ -42,5 +55,9 @@ public class LoginPage extends BasePage<LoginPage> {
     public LoginPage verifyStillOnLoginPage() {
         $("#login").shouldBe(visible);
         return this;
+    }
+
+    public boolean isOpened() {
+        return $("#userName").is(visible);
     }
 }
